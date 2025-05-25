@@ -7,7 +7,7 @@ import csv
 from pathlib import Path
 
 class MidiSplitter:
-    def __init__(self, remove_csv=False):
+    def __init__(self, remove_csv=None):
         """Initialize the MidiSplitter with configuration options."""
         self.remove_csv = remove_csv
         self.input_file = None
@@ -68,7 +68,6 @@ class MidiSplitter:
         for row in rows:
             if len(row) < 3:
                 midi_events.append((-1, row))
-                continue
             else:
                 event_type = row[2]
                 if self.is_midi_event(event_type) and len(row) > 3:
@@ -107,9 +106,12 @@ class MidiSplitter:
         if self.is_midi_file(input_file):
             print(f"Converting MIDI file {input_file} to CSV...")
             self.csv_file = self.convert_midi_to_csv(input_file)
-            self.remove_csv = True
+            if self.remove_csv is None:
+                self.remove_csv = True
         else:
             self.csv_file = input_file
+            if self.remove_csv is None:
+                self.remove_csv = False
 
         print(f"Processing {self.csv_file}...")
         self.process_csv_file(self.csv_file)
