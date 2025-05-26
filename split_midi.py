@@ -1,3 +1,10 @@
+"""A Python module for splitting MIDI files into separate files by channel.
+
+This module provides functionality to split MIDI files into separate files based on
+MIDI channels while preserving meta events. It uses midicsv and csvmidi tools for
+conversion between MIDI and CSV formats.
+"""
+
 #!/usr/bin/env python3
 
 import sys
@@ -81,12 +88,19 @@ class MidiSplitter:
         """
         csv_file = midi_file.rsplit('.', 1)[0] + '.csv'
         try:
-            subprocess.run(['midicsv', midi_file, csv_file], check=True, capture_output=True, text=True)
+            subprocess.run(
+                ['midicsv', midi_file, csv_file],
+                check=True,
+                capture_output=True,
+                text=True
+            )
             return csv_file
         except subprocess.CalledProcessError as e:
             raise MidiSplitterError(f"Error converting MIDI to CSV: {e.stderr}") from e
-        except FileNotFoundError:
-            raise MidiSplitterError("Error: midicsv command not found. Please install midicsv.")
+        except FileNotFoundError as exc:
+            raise MidiSplitterError(
+                "Error: midicsv command not found. Please install midicsv."
+            ) from exc
 
     def convert_csv_to_midi(self, csv_file: str) -> str:
         """Convert CSV file to MIDI using csvmidi.
@@ -102,12 +116,19 @@ class MidiSplitter:
         """
         midi_file = csv_file.rsplit('.', 1)[0] + '.mid'
         try:
-            subprocess.run(['csvmidi', csv_file, midi_file], check=True, capture_output=True, text=True)
+            subprocess.run(
+                ['csvmidi', csv_file, midi_file],
+                check=True,
+                capture_output=True,
+                text=True
+            )
             return midi_file
         except subprocess.CalledProcessError as e:
             raise MidiSplitterError(f"Error converting CSV to MIDI: {e.stderr}") from e
-        except FileNotFoundError:
-            raise MidiSplitterError("Error: csvmidi command not found. Please install midicsv.")
+        except FileNotFoundError as exc:
+            raise MidiSplitterError(
+                "Error: csvmidi command not found. Please install midicsv."
+            ) from exc
 
     @staticmethod
     def is_midi_event(event_type: str) -> bool:
@@ -171,7 +192,7 @@ class MidiSplitter:
             str: Path to the created CSV file
         """
         output_file = self.output_dir / f'channel_{channel}.csv'
-        with open(output_file, 'w', newline='') as f:
+        with open(output_file, 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
             for event in midi_events:
                 if event[0] == channel or event[0] == META_EVENT_CHANNEL:
@@ -189,7 +210,7 @@ class MidiSplitter:
             csv_file: Path to the CSV file to process
         """
         # Read all rows from the CSV file
-        with open(csv_file, 'r') as f:
+        with open(csv_file, 'r', encoding='utf-8') as f:
             csv_reader = csv.reader(f, skipinitialspace=True)
             rows = list(csv_reader)
 
@@ -253,6 +274,10 @@ class MidiSplitter:
             raise MidiSplitterError(f"Error processing file {input_file}: {str(e)}") from e
 
 def main():
+    """Main entry point for the script.
+
+    Processes command line arguments and runs the MIDI splitter.
+    """
     if len(sys.argv) != 2:
         logger.error("Usage: python split_midi.py <input_file>")
         sys.exit(1)

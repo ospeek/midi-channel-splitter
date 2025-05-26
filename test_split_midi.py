@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
+"""Unit tests for the MIDI channel splitter module.
+
+This module contains test cases for the MidiSplitter class, testing its functionality
+for splitting MIDI files into separate files per channel.
+"""
 
 import unittest
 import os
 import tempfile
 import shutil
 import subprocess
-from pathlib import Path
 from split_midi import MidiSplitter, MidiSplitterError
 
 class TestMidiSplitter(unittest.TestCase):
@@ -18,8 +22,8 @@ class TestMidiSplitter(unittest.TestCase):
         try:
             subprocess.run(['midicsv', '-u'], capture_output=True, check=True)
             subprocess.run(['csvmidi', '-u'], capture_output=True, check=True)
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            raise unittest.SkipTest("Required commands (midicsv, csvmidi) not found")
+        except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+            raise unittest.SkipTest("Required commands (midicsv, csvmidi) not found") from exc
 
     def setUp(self):
         """Set up test environment before each test."""
@@ -35,7 +39,7 @@ class TestMidiSplitter(unittest.TestCase):
         """Create test MIDI and CSV files."""
         # Create a CSV file for testing
         test_csv = os.path.join(self.test_dir, "test.csv")
-        with open(test_csv, "w") as f:
+        with open(test_csv, "w", encoding='utf-8') as f:
             f.write("0, 0, Header, 0, 1, 96\n")
             f.write("1, 0, Start_track\n")
             f.write("1, 0, MIDI_port, 0\n")
@@ -109,7 +113,7 @@ class TestMidiSplitter(unittest.TestCase):
 
         for channel in [1, 2]:
             csv_file = f"{self.test_dir}/split_channels/channel_{channel}.csv"
-            with open(csv_file, 'r') as f:
+            with open(csv_file, 'r', encoding='utf-8') as f:
                 lines = f.readlines()
                 # Check first line for header
                 self.assertTrue(any('Header' in line for line in lines[:3]),
@@ -124,7 +128,7 @@ class TestMidiSplitter(unittest.TestCase):
 
         # Test channel 1 content
         channel1_csv = f"{self.test_dir}/split_channels/channel_1.csv"
-        with open(channel1_csv, 'r') as f:
+        with open(channel1_csv, 'r', encoding='utf-8') as f:
             content = f.read()
             # Should contain meta events
             self.assertIn("Header", content)
@@ -142,7 +146,7 @@ class TestMidiSplitter(unittest.TestCase):
 
         # Test channel 2 content
         channel2_csv = f"{self.test_dir}/split_channels/channel_2.csv"
-        with open(channel2_csv, 'r') as f:
+        with open(channel2_csv, 'r', encoding='utf-8') as f:
             content = f.read()
             # Should contain meta events
             self.assertIn("Header", content)

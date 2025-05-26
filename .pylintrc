@@ -1,0 +1,14 @@
+[MASTER]
+jobs=0
+
+[MESSAGES CONTROL]
+disable=W0107,  # Unnecessary "pass" statement
+        W1203,  # logging-fstring-interpolation
+        C0301   # line-too-long
+
+[FORMAT]
+max-line-length=100
+
+[BASIC]
+no-docstring-rgx=__.*__
+good-names=i,j,k,ex,Run,_,id
